@@ -12,6 +12,7 @@ export class AppError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 }
+
 export class NotFoundError extends AppError {
   constructor(message = 'Resource not found') {
     super(message, 404);
