@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { AppError, NotFoundError } from '@/errors/errors';
+import { AppError } from '@/errors/AppError';
+import { NotFoundError } from '@/errors/NotFoundError';
 
 const isDev = process.env.NODE_ENV === 'development';
 

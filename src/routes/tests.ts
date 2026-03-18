@@ -1,5 +1,6 @@
 import express from 'express';
-import { AppError, UnauthorizedError } from '@/errors/errors';
+import { AppError } from '@/errors/AppError';
+import { UnauthorizedError } from '@/errors/UnauthorizedError';
 
 const router = express.Router();
 
