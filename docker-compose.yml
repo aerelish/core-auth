@@ -20,6 +20,9 @@ services:
   db:
     # use the official MySQL image from Docker Hub
     image: mysql:8.0
+    # map port 3306 of the container to port 3306 on the host ( to connect to MySQL at localhost:3306 )
+    ports:
+      - '3306:3306'
     # set environment variables for MySQL configuration
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}

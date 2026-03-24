@@ -17,10 +17,13 @@ cp .env.example .env
 # Edit .env with your MySQL credentials
 ```
 
-2. Start the application and database:
+2. Start the application and database ( or db only ):
 
 ```bash
 docker compose up -d
+
+# run db only ( when doing dev on local )
+docker compose up db -d
 ```
 
 3. App will be available at `http://localhost:3000`

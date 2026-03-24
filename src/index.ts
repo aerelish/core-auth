@@ -1,18 +1,13 @@
-import express from 'express';
-import helmet from 'helmet';
-import testRoutes from '@/routes/tests';
-import { errorHandler, notFoundHandler } from '@/middlewares/error-handler';
+/**
+ * @file index.ts
+ * @description entry point of the application. It starts the server and listens on the specified port.
+ * @author Ejohn
+ */
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+import app from './app';
+import { ENV } from './config';
 
-app.use(helmet());
-app.use(express.json());
-
-app.use(testRoutes);
-
-app.use(notFoundHandler);
-app.use(errorHandler);
+const { PORT } = ENV;
 
 app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);

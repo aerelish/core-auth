@@ -1,3 +1,12 @@
+/**
+ * @file AppError.ts
+ * @description custom error class for handling application-specific errors
+ * @author Ejohn
+ */
+
+/**
+ * @description AppError is a custom error class that extends the built-in Error class
+ */
 export class AppError extends Error {
 	public readonly statusCode: number;
 	public readonly isOperational: boolean;
