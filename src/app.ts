@@ -14,7 +14,7 @@ const app = express();
 app.use(helmet());
 app.use(express.json());
 
-app.use(router);
+app.use('/api/v1/', router);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
