@@ -5,4 +5,3 @@
  */
 
 export { ENV } from './env';
-export { pool } from './db';

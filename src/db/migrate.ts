@@ -1,5 +1,5 @@
 /**
- * @file db/migrations.ts
+ * @file db/migrate.ts
  * @description database migration runner for executing SQL migration files
  * @author Ejohn
  */
@@ -30,14 +30,24 @@ export async function runMigrations() {
 	// execute each migration file that hasn't been executed yet
 	for (const file of migrationFiles) {
 		if (executedFilenames.has(file)) {
-			console.log(`Skipping already executed migration: ${file}`);
+			console.log(`Skipping already executed migrations: ${file}`);
 			continue;
 		}
 
 		// read the SQL file and execute its contents
 		const filePath = path.join(migrationsDir, file);
 		const sql = await fs.readFile(filePath, 'utf-8');
-		await db.execute(sql);
+
+		// split the SQL into individual statements and execute them sequentially
+		const statements = sql
+			.split(';')
+			.map((statement) => statement.trim())
+			.filter(Boolean); // removes empty strings
+
+		// execute each statement one at a time
+		for (const statement of statements) {
+			await db.execute(statement);
+		}
 
 		// record the executed migration in the migrations table
 		await db.execute('INSERT INTO migrations (filename) VALUES (?)', [file]);
