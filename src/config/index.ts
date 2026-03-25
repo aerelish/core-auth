@@ -5,3 +5,4 @@
  */
 
 export { ENV } from './env';
+export { privateKey, publicKey } from './keys';
