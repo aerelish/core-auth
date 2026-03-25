@@ -1,16 +1,16 @@
-@baseUrl = http://localhost:3001
+@baseUrl = http://localhost:3000
 
 ### Health check
 GET {{baseUrl}}/health
 
 ### 401 - operational error
-GET {{baseUrl}}/test/unauthorized
+GET {{baseUrl}}/error/unauthorized
 
 ### 500 - non-operational (message hidden in prod)
-GET {{baseUrl}}/test/crash
+GET {{baseUrl}}/error/crash
 
 ### 500 - raw programmer error
-GET {{baseUrl}}/test/unhandled
+GET {{baseUrl}}/error/unhandled
 
 ### 404 - not found handler
 GET {{baseUrl}}/does-not-exist

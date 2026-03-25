@@ -6,12 +6,15 @@
 
 import express from 'express';
 import helmet from 'helmet';
+import router from './routes';
 import { errorHandler, notFoundHandler } from '@/middlewares/error-handler';
 
 const app = express();
 
 app.use(helmet());
 app.use(express.json());
+
+app.use(router);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
