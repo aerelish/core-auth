@@ -44,8 +44,9 @@ export async function registerUser(email: string, password: string) {
  * @param email string
  * @param password string : raw password, will be compared with hashed password in database
  * @throws AppError if email does not exist or password is incorrect
+ * @returns object containing user ID if login is successful
  */
-export async function loginUser(email: string, password: string) {
+export async function loginUser(email: string, password: string): Promise<{ id: number }> {
 	// fetch user by email
 	const [rows] = await db.execute('SELECT id, password FROM users WHERE email = ?', [email]);
 
@@ -60,5 +61,5 @@ export async function loginUser(email: string, password: string) {
 		throw new AppError('Invalid credentials', 401);
 	}
 
-	// TODO: if all successful, issue a token for user using user id
+	return { id: user.id };
 }

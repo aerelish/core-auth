@@ -14,4 +14,6 @@ export const ENV = {
 	DB_NAME: process.env.DB_NAME ?? '',
 	DB_USER: process.env.DB_USER ?? '',
 	DB_PASSWORD: process.env.DB_PASSWORD ?? '',
+	JWT_ACCESS_EXPIRES_IN: process.env.JWT_ACCESS_EXPIRES_IN ?? '15m',
+	JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d',
 };
