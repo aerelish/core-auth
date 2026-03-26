@@ -7,10 +7,12 @@
 import express from 'express';
 import errorRouter from './error';
 import healthRouter from './health';
+import authRouter from './auth';
 
 const router = express.Router();
 
 router.use('/error', errorRouter);
 router.use('/health', healthRouter);
+router.use('/auth', authRouter);
 
 export default router;

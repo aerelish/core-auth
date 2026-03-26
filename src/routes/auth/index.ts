@@ -1,5 +1,10 @@
+/**
+ * @file src/routes/auth/index.ts
+ * @description router for user authentication
+ */
+
 import express from 'express';
-import { register, login } from '@/controller/auth.controller';
+import { register, login } from './controller';
 
 const auth = express.Router();
 
