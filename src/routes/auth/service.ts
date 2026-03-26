@@ -7,9 +7,16 @@ import bcrypt from 'bcrypt';
 import { AppError } from '@/errors/AppError';
 import { db } from '@/db/connection';
 
+const DUMMY_HASH = '$2b$12$KIXQJYVqGq8XyYpHn.5euJjGQ9e0iZ5a6u1vZ1z1z1z1z1z1z1z'; // hash for "dummy_password"
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SALT_ROUNDS = 12;
 
+/**
+ * register a new user with the given email and password
+ * @param email string
+ * @param password string : raw password, will be hashed before storing in database
+ * @throws AppError if email is invalid, password is too short, or email is already in use
+ */
 export async function registerUser(email: string, password: string) {
 	if (!EMAIL_REGEX.test(email)) {
 		throw new AppError('Invalid email format', 400);
@@ -32,6 +39,26 @@ export async function registerUser(email: string, password: string) {
 	await db.execute('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword]);
 }
 
-export function loginUser(email: string, password: string) {
-	// TODO: implement user login logic, e.g. verify credentials, generate JWT token, etc.
+/**
+ * login a user with the given email and password, provides token if successful
+ * @param email string
+ * @param password string : raw password, will be compared with hashed password in database
+ * @throws AppError if email does not exist or password is incorrect
+ */
+export async function loginUser(email: string, password: string) {
+	// fetch user by email
+	const [rows] = await db.execute('SELECT id, password FROM users WHERE email = ?', [email]);
+
+	// get row as user and compare the password with the hashed password in the database
+	const user = (rows as any[])[0];
+
+	// use dummy hash if user not found to prevent timing based user enumeration attacks
+	const passwordToCheck = user ? user.password : DUMMY_HASH;
+	const isPasswordValid = await bcrypt.compare(password, passwordToCheck);
+
+	if (!user || !isPasswordValid) {
+		throw new AppError('Invalid credentials', 401);
+	}
+
+	// TODO: if all successful, issue a token for user using user id
 }
