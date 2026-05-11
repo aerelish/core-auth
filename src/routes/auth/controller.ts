@@ -6,7 +6,7 @@
 import { Request, Response } from 'express';
 import { AppError } from '@/errors/AppError';
 import { ENV } from '@/config/env';
-import { parseDurationInMs } from '@/lib/utils';
+import { logger, parseDurationInMs } from '@/lib/utils';
 import { issueTokenPair } from './service.token';
 import * as authService from './service';
 
@@ -38,12 +38,19 @@ function handleError(error: unknown, res: Response) {
 	if (error instanceof AppError) {
 		return res.status(error.statusCode).json({ message: error.message });
 	}
-	console.error('Unhandled error:', error);
+	logger.error(error, 'Unhandled error');
 	return res.status(500).json({ message: 'Internal server error' });
 }
 
+/**
+ * calls the registerUser service to register a new user with email and password
+ * @param req Request : the express request object
+ * @param res Response : the express response object
+ * @returns Response : the express response object with message if successful, or error message if not
+ */
 export async function register(req: Request, res: Response) {
 	try {
+		// TODO: validate the request body using zod
 		const { email, password } = req.body;
 		const { email: validEmail, password: validPassword } = checkRequiredFields(email, password);
 
@@ -55,6 +62,12 @@ export async function register(req: Request, res: Response) {
 	}
 }
 
+/**
+ * calls the loginUser service to login a user with email and password
+ * @param req Request : the express request object
+ * @param res Response : the express response object
+ * @returns Response : the express response object with message if successful, or error message if not
+ */
 export async function login(req: Request, res: Response) {
 	try {
 		const { email, password } = req.body;
@@ -63,6 +76,10 @@ export async function login(req: Request, res: Response) {
 		const { id } = await authService.loginUser(validEmail, validPassword);
 		const { accessToken, refreshToken } = await issueTokenPair(id);
 
+		/** set cookies for access and refresh tokens */
+
+		// set secure flag only if in production to prevent man in the middle attacks
+		// in other words: accessToken and refreshToken is sent only via https in production
 		const isProd = ENV.NODE_ENV === 'production';
 
 		res.cookie('accessToken', accessToken, {

@@ -4,6 +4,23 @@
  * @author Ejohn
  */
 
+import pino from 'pino';
+
+/**
+ * logger instance for the application
+ * @description: pino is a logger library for Node.js, it is used to log messages to the console
+ * @author Ejohn
+ */
+export const logger = pino({
+	level: 'info',
+	transport: {
+		target: 'pino-pretty', // pretty logs in dev
+		options: {
+			colorize: true, // add colors to the logs
+		},
+	},
+});
+
 /**
  * parse a duration string (e.g. "15m", "7d", "1h") into milliseconds
  * @param duration string : e.g. "15m", "7d", "1h", etc.

@@ -36,7 +36,7 @@ export async function registerUser(email: string, password: string) {
 	const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
 	// store the new user in the database
-	await db.execute('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword]);
+	await db.execute('INSERT INTO users (email, password_hash) VALUES (?, ?)', [email, hashedPassword]);
 }
 
 /**
@@ -48,13 +48,13 @@ export async function registerUser(email: string, password: string) {
  */
 export async function loginUser(email: string, password: string): Promise<{ id: number }> {
 	// fetch user by email
-	const [rows] = await db.execute('SELECT id, password FROM users WHERE email = ?', [email]);
+	const [rows] = await db.execute('SELECT id, password_hash FROM users WHERE email = ?', [email]);
 
 	// get row as user and compare the password with the hashed password in the database
 	const user = (rows as any[])[0];
 
 	// use dummy hash if user not found to prevent timing based user enumeration attacks
-	const passwordToCheck = user ? user.password : DUMMY_HASH;
+	const passwordToCheck = user ? user.password_hash : DUMMY_HASH;
 	const isPasswordValid = await bcrypt.compare(password, passwordToCheck);
 
 	if (!user || !isPasswordValid) {
