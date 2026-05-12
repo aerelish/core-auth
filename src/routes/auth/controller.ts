@@ -110,6 +110,34 @@ export async function login(req: Request, res: Response) {
 }
 
 /**
+ * calls the logout service to logout a user
+ * @param req Request : the express request object
+ * @param res Response : the express response object
+ * @returns Response : the express response object with message if successful, or error message if not
+ */
+export async function logout(req: Request, res: Response) {
+	try {
+		const refreshToken = req.cookies.refreshToken;
+
+		// if refresh token is present, revoke it
+		// if no refresh token is present, do nothing : idempotent logout
+		if (refreshToken) {
+			const hashedRefreshToken = hashToken(refreshToken);
+			await authService.logoutUser(hashedRefreshToken);
+		}
+
+		/** clear cookies */
+
+		res.clearCookie('accessToken');
+		res.clearCookie('refreshToken');
+
+		return res.status(200).json({ message: 'Logged out successfully' });
+	} catch (error) {
+		return handleError(error, res);
+	}
+}
+
+/**
  * calls the refreshToken service to refresh the access and refresh tokens
  * @param req Request : the express request object
  * @param res Response : the express response object

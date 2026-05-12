@@ -67,6 +67,21 @@ export async function loginUser(email: string, password: string): Promise<{ id: 
 }
 
 /**
+ * logout a user by revoking the refresh token
+ * @param hashedRefreshToken string : the hashed refresh token
+ * @throws UnauthorizedError if the refresh token is invalid, revoked, or expired
+ */
+export async function logoutUser(hashedRefreshToken: string) {
+	// check if the refresh token is in the database
+	const [rows] = await db.execute('SELECT * FROM refresh_tokens WHERE token_hash = ?', [hashedRefreshToken]);
+
+	// if the refresh token is found, revoke it
+	if ((rows as any[]).length > 0) {
+		await revokeRefreshToken(hashedRefreshToken);
+	}
+}
+
+/**
  * refresh the access and refresh tokens
  * @param hashedRefreshToken string : the hashed refresh token
  * @returns object containing the user ID for creating a new token pair
