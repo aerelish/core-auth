@@ -7,7 +7,7 @@ import { Request, Response } from 'express';
 import { AppError } from '@/errors/AppError';
 import { ENV } from '@/config/env';
 import { logger, parseDurationInMs } from '@/lib/utils';
-import { issueTokenPair } from './service.token';
+import { issueTokenPair } from '@/lib/token';
 import * as authService from './service';
 
 /**

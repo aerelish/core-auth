@@ -61,7 +61,7 @@ export async function issueTokenPair(userId: number): Promise<{ accessToken: str
 }
 
 /**
- * this is equivalent to the verification of access token, but for verification. it verifies the given access token using the public key and returns the decoded payload if valid
+ * verifies the given access token using the public key and returns the decoded payload if valid
  * @param token string : the access token to verify
  * @returns JwtPayload : the decoded payload of the access token
  */
