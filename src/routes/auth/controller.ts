@@ -3,12 +3,34 @@
  * @author Ejohn
  */
 
-import { Request, Response } from 'express';
+import { Request, Response, CookieOptions } from 'express';
 import { AppError } from '@/errors/AppError';
+import { UnauthorizedError } from '@/errors/UnauthorizedError';
 import { ENV } from '@/config/env';
 import { logger, parseDurationInMs } from '@/lib/utils';
-import { issueTokenPair } from '@/lib/token';
+import { hashToken, issueTokenPair } from '@/services/token';
 import * as authService from './service';
+
+// set secure flag only if in production to prevent man in the middle attacks
+// in other words: accessToken and refreshToken is sent only via https in production
+// NOTE: secure = const isProd = ENV.NODE_ENV === 'production';
+const cookieOptions: CookieOptions = {
+	httpOnly: true,
+	secure: ENV.NODE_ENV === 'production', // HTTPS only on production
+	sameSite: 'strict', // prevent CSRF attack ( cross site request forgery )
+};
+
+const accessTokenCookieOptions: CookieOptions = {
+	...cookieOptions,
+	path: '/api/v1/', // make sure the cookie is sent for all routes under /api/v1/, adjust as needed
+	maxAge: parseDurationInMs(ENV.JWT_ACCESS_EXPIRES_IN),
+};
+
+const refreshTokenCookieOptions: CookieOptions = {
+	...cookieOptions,
+	path: '/api/v1/auth/refresh', // only send refresh token for the refresh endpoint
+	maxAge: parseDurationInMs(ENV.JWT_REFRESH_EXPIRES_IN),
+};
 
 /**
  * validate the presence and type of email and password fields in the request body, and return them as strings
@@ -78,27 +100,36 @@ export async function login(req: Request, res: Response) {
 
 		/** set cookies for access and refresh tokens */
 
-		// set secure flag only if in production to prevent man in the middle attacks
-		// in other words: accessToken and refreshToken is sent only via https in production
-		const isProd = ENV.NODE_ENV === 'production';
-
-		res.cookie('accessToken', accessToken, {
-			httpOnly: true,
-			secure: isProd, // HTTPS only on production
-			sameSite: 'strict', // prevent CSRF attack ( cross site request forgery )
-			path: '/api/v1/', // make sure the cookie is sent for all routes under /api/v1/, adjust as needed
-			maxAge: parseDurationInMs(ENV.JWT_ACCESS_EXPIRES_IN),
-		});
-
-		res.cookie('refreshToken', refreshToken, {
-			httpOnly: true,
-			secure: isProd, // HTTPS only on production
-			sameSite: 'strict', // prevent CSRF attack ( cross site request forgery )
-			path: '/api/v1/auth/refresh', // only send refresh token for the refresh endpoint
-			maxAge: parseDurationInMs(ENV.JWT_REFRESH_EXPIRES_IN),
-		});
+		res.cookie('accessToken', accessToken, accessTokenCookieOptions);
+		res.cookie('refreshToken', refreshToken, refreshTokenCookieOptions);
 
 		return res.status(200).json({ message: 'Logged in successfully' });
+	} catch (error) {
+		return handleError(error, res);
+	}
+}
+
+/**
+ * calls the refreshToken service to refresh the access and refresh tokens
+ * @param req Request : the express request object
+ * @param res Response : the express response object
+ * @returns Response : the express response object with message if successful, or error message if not
+ */
+export async function refresh(req: Request, res: Response) {
+	try {
+		const refreshToken = req.cookies.refreshToken;
+		if (!refreshToken) throw new UnauthorizedError();
+
+		const hashedRefreshToken = hashToken(refreshToken);
+		const { id } = await authService.refreshToken(hashedRefreshToken);
+		const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await issueTokenPair(id);
+
+		/** set cookies for access and refresh tokens */
+
+		res.cookie('accessToken', newAccessToken, accessTokenCookieOptions);
+		res.cookie('refreshToken', newRefreshToken, refreshTokenCookieOptions);
+
+		return res.status(200).json({ message: 'Token refreshed successfully' });
 	} catch (error) {
 		return handleError(error, res);
 	}

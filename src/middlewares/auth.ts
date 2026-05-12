@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { UnauthorizedError } from '@/errors/UnauthorizedError';
-import { verifyAccessToken } from '@/lib/token';
+import { verifyAccessToken } from '@/services/token';
 
 /**
  * middleware to authenticate the user by verifying the access token via verifyAccessToken function

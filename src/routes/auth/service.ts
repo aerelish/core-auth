@@ -5,7 +5,9 @@
 
 import bcrypt from 'bcrypt';
 import { AppError } from '@/errors/AppError';
+import { UnauthorizedError } from '@/errors/UnauthorizedError';
 import { db } from '@/db/connection';
+import { revokeRefreshToken, revokeRefreshTokenFamily } from '@/services/token';
 
 const DUMMY_HASH = '$2b$12$KIXQJYVqGq8XyYpHn.5euJjGQ9e0iZ5a6u1vZ1z1z1z1z1z1z1z'; // hash for "dummy_password"
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -62,4 +64,39 @@ export async function loginUser(email: string, password: string): Promise<{ id: 
 	}
 
 	return { id: user.id };
+}
+
+/**
+ * refresh the access and refresh tokens
+ * @param hashedRefreshToken string : the hashed refresh token
+ * @returns object containing the user ID for creating a new token pair
+ * @throws UnauthorizedError if the refresh token is invalid, revoked, or expired
+ */
+export async function refreshToken(hashedRefreshToken: string) {
+	const [rows] = await db.execute('SELECT * FROM refresh_tokens WHERE token_hash = ?', [hashedRefreshToken]);
+
+	// if no row is returned, the refresh token is invalid
+	if ((rows as any[]).length === 0) {
+		throw new UnauthorizedError('Invalid refresh token');
+	}
+
+	// get the refresh token row
+	const refreshToken = (rows as any[])[0];
+
+	// if the refresh token is revoked, reuse detected: revoke entire family of tokens
+	if (refreshToken.is_revoked) {
+		await revokeRefreshTokenFamily(refreshToken.family_id);
+		throw new UnauthorizedError('Refresh token revoked');
+	}
+
+	// if the refresh token is expired, throw an error
+	if (refreshToken.expires_at < new Date()) {
+		throw new UnauthorizedError('Refresh token expired');
+	}
+
+	// if the refresh token is valid, mark it as used by setting is_revoked to true
+	await revokeRefreshToken(hashedRefreshToken);
+
+	// return obj containing the user ID for creating a new token pair
+	return { id: refreshToken.user_id };
 }

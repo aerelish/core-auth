@@ -70,3 +70,21 @@ export function verifyAccessToken(token: string): JwtPayload {
 	// note: explicitly white-listing RS56 to prevent algorithm confusion attacks, where an attacker could trick the system into accepting a token signed with a weaker algorithm
 	return jwt.verify(token, publicKey, { algorithms: ['RS256'] }) as JwtPayload;
 }
+
+/**
+ * revoke the given refresh token by setting is_revoked to true
+ * @param hashedRefreshToken string : the hashed refresh token to revoke
+ */
+export async function revokeRefreshToken(hashedRefreshToken: string) {
+	// revoke the refresh token by setting is_revoked to true
+	await db.execute('UPDATE refresh_tokens SET is_revoked = TRUE WHERE token_hash = ?', [hashedRefreshToken]);
+}
+
+/**
+ * revoke all refresh tokens for the given family ID
+ * @param familyId string : the family ID for which to revoke all refresh tokens
+ */
+export async function revokeRefreshTokenFamily(familyId: string) {
+	// revoke all refresh tokens for the given family ID by setting is_revoked to true
+	await db.execute('UPDATE refresh_tokens SET is_revoked = TRUE WHERE family_id = ?', [familyId]);
+}

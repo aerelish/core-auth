@@ -5,12 +5,13 @@
 
 import express from 'express';
 import { authMiddleware } from '@/middlewares/auth';
-import { register, login } from './controller';
+import { register, login, refresh } from './controller';
 
 const auth = express.Router();
 
 auth.post('/register', register);
 auth.post('/login', login);
+auth.post('/refresh', refresh);
 
 // for testing the auth middleware
 auth.get('/me', authMiddleware, (req, res) => {
