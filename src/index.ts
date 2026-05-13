@@ -9,6 +9,15 @@ import { ENV } from './config';
 import { runMigrations } from './db/migrate';
 
 const { PORT } = ENV;
+const REFRESH_TOKEN_CLEANUP_INTERVAL = 1000 * 60 * 60 * 24; // 24 hours
+
+async function runRefreshTokenCleanup() {
+	try {
+		//TODO: implement refresh token cleanup logic
+	} catch (error) {
+		console.error('Error running refresh token cleanup:', error);
+	}
+}
 
 async function startServer() {
 	try {
@@ -21,6 +30,10 @@ async function startServer() {
 		app.listen(PORT, () => {
 			console.log(`Server running on port ${PORT}`);
 		});
+
+		// start the refresh token cleanup interval
+		runRefreshTokenCleanup();
+		setInterval(runRefreshTokenCleanup, REFRESH_TOKEN_CLEANUP_INTERVAL);
 	} catch (error) {
 		console.error('Error running database migrations:', error);
 		process.exit(1);

@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import jwt, { SignOptions, JwtPayload } from 'jsonwebtoken';
+import { ResultSetHeader } from 'mysql2/promise';
 import { privateKey, publicKey, ENV } from '@/config';
 import { db } from '@/db/connection';
 import { parseDurationInMs } from '@/lib/utils';
@@ -87,4 +88,14 @@ export async function revokeRefreshToken(hashedRefreshToken: string) {
 export async function revokeRefreshTokenFamily(familyId: string) {
 	// revoke all refresh tokens for the given family ID by setting is_revoked to true
 	await db.execute('UPDATE refresh_tokens SET is_revoked = TRUE WHERE family_id = ?', [familyId]);
+}
+
+/**
+ * cleanup expired refresh tokens from the database
+ * @returns number : the number of expired refresh tokens cleaned up
+ */
+export async function cleanupExpiredRefreshTokens() {
+	// cleanup expired refresh tokens by deleting them from the database
+	const [rows] = await db.execute<ResultSetHeader>('DELETE FROM refresh_tokens WHERE expires_at < NOW()');
+	return rows.affectedRows;
 }
