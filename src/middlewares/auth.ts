@@ -5,6 +5,7 @@ import { verifyAccessToken } from '@/services/token';
 /**
  * middleware to authenticate the user by verifying the access token via verifyAccessToken function
  * @param req Request : the express request object
+ * @param res Response : the express response object | not used in this middleware but required by the express middleware signature
  * @param next NextFunction : the next function to call
  * @throws UnauthorizedError if the access token is not present or invalid
  */
