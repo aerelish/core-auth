@@ -1,3 +1,7 @@
 node_modules/
 dist/
+
+# secret files
 .env
+*.pem        
+private.pem  
